@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // ফিক্সড মঙ্গোডিবি কানেকশন ইউআরএল (পাসওয়ার্ডের @ এনকোড করা হয়েছে)
-const MONGO_URI = "mongodb+srv://mr3173886_db_user:taninislam123%40tareq@cluster0.48yeksq.mongodb.net/HinataBot?retryWrites=true&w=majority&appName=Cluster0";
+const MONGO_URI = "mongodb+srv://mr3173886_db_user:taninislam123tareq@cluster0.48yeksq.mongodb.net/HinataBot?retryWrites=true&w=majority&appName=Cluster0";
 
 mongoose.connect(MONGO_URI)
     .then(() => console.log("Database Connected Successfully"))
