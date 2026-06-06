@@ -22,7 +22,7 @@ const ReplySchema = new mongoose.Schema({
 });
 const Reply = mongoose.model('Reply', ReplySchema);
 
-// ভিজিটিং কার্ডের ডাইনামিক ফাইল ডিটেকশন রুট
+// ভিজিটিংカードের ডাইনামিক ফাইল ডিটেকশন রুট
 app.get('/api/files', (req, res) => {
     const publicPath = path.join(__dirname, 'public');
     fs.readdir(publicPath, (err, files) => {
@@ -114,7 +114,11 @@ app.get('/api/jan/list', async (req, res) => {
     }
 });
 
+// ─── [FIXED] হোম রাউট ফিক্স করা হলো ───
+app.get('/', (req, res) => {
+    res.send("👑 Baby Server is running successfully under HinataBot database! — Powered by Mr. King");
+});
+
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
-                                              
