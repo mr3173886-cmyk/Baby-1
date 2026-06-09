@@ -8,7 +8,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static('public'));
 
-// ফিক্সড মঙ্গোডিবি কানেকশন ইউআরএল (পাসওয়ার্ডের @ এনকোড করা হয়েছে)
+// মঙ্গোডিবি কানেকশন ইউআরএল
 const MONGO_URI = "mongodb+srv://mr3173886_db_user:taninislam123tareq@cluster0.48yeksq.mongodb.net/HinataBot?retryWrites=true&w=majority&appName=Cluster0";
 
 mongoose.connect(MONGO_URI)
@@ -22,7 +22,12 @@ const ReplySchema = new mongoose.Schema({
 });
 const Reply = mongoose.model('Reply', ReplySchema);
 
-// ভিজিটিংカードের ডাইনামিক ফাইল ডিটেকশন রুট
+// হোম রাউট ফিক্স (সরাসরি লিংকে ঢুকলে যেন ড্যাশবোর্ড ফাইলটি লোড হয়)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// ডাইনামিক ফাইল ডিটেকশন রুট
 app.get('/api/files', (req, res) => {
     const publicPath = path.join(__dirname, 'public');
     fs.readdir(publicPath, (err, files) => {
@@ -32,9 +37,45 @@ app.get('/api/files', (req, res) => {
     });
 });
 
-// চ্যাটবট এপিআই রুটস
+// 🔥 [MAX UPGRADE] আনলিমিটেড এক ক্লিকে Teach দেওয়ার Bulk API
+app.post('/api/jan/bulk-teach', async (req, res) => {
+    try {
+        const { textData } = req.body;
+        if (!textData) return res.status(400).json({ error: "No data provided" });
 
-// ১. teach কমান্ডের এপিআই
+        const lines = textData.split("\n");
+        let successCount = 0;
+
+        for (let line of lines) {
+            if (!line.includes("-")) continue;
+
+            const parts = line.split("-");
+            const trigger = parts[0].replace("bby teach", "").trim().toLowerCase();
+            const responseText = parts[1].trim();
+
+            if (!trigger || !responseText) continue;
+
+            const responseArray = responseText.split(" - ").map(r => r.trim());
+
+            let data = await Reply.findOne({ trigger: trigger });
+            if (data) {
+                data.responses = [...new Set([...data.responses, ...responseArray])];
+                await data.save();
+            } else {
+                data = new Reply({ trigger: trigger, responses: responseArray });
+                await data.save();
+            }
+            successCount++;
+        }
+
+        const totalCount = await Reply.countDocuments();
+        res.json({ success: true, message: `✅ সফলভাবে ${successCount} টি প্রশ্ন ডাটাবেজে সেভ হয়েছে!`, count: totalCount });
+    } catch (err) {
+        res.status(500).json({ error: "Server error during bulk teach" });
+    }
+});
+
+// সিঙ্গেল Teach কমান্ডের এপিআই
 app.post('/api/jan/teach', async (req, res) => {
     try {
         const { trigger, responses } = req.body;
@@ -59,7 +100,7 @@ app.post('/api/jan/teach', async (req, res) => {
     }
 });
 
-// ২. বটের চ্যাটের এপিআই (Hinata Endpoint)
+// বটের চ্যাটের এপিআই (Hinata Endpoint)
 app.post('/api/hinata', async (req, res) => {
     try {
         const { text } = req.body;
@@ -72,14 +113,14 @@ app.post('/api/hinata', async (req, res) => {
             const randomReply = data.responses[Math.floor(Math.random() * data.responses.length)];
             res.json({ message: randomReply });
         } else {
-            res.json({ message: "আমি এটা জানি না আপু/ভাইয়া, দয়া করে শিখিয়ে দাও! 🥺" });
+            res.json({ message: "sikai deu 🥺" });
         }
     } catch (err) {
         res.json({ message: "error janu🥹" });
     }
 });
 
-// ৩. রিমুভ কমান্ডের এপিআই
+// রিমুভ কমান্ডের এপিআই
 app.delete('/api/jan/remove', async (req, res) => {
     try {
         const { trigger, index } = req.body;
@@ -104,7 +145,7 @@ app.delete('/api/jan/remove', async (req, res) => {
     }
 });
 
-// ৪. ডাটাবেজ কাউন্ট এপিআই
+// ডাটাবেজ কাউন্ট এপিআই
 app.get('/api/jan/list', async (req, res) => {
     try {
         const total = await Reply.countDocuments();
@@ -114,11 +155,7 @@ app.get('/api/jan/list', async (req, res) => {
     }
 });
 
-// ─── [FIXED] হোম রাউট ফিক্স করা হলো ───
-app.get('/', (req, res) => {
-    res.send("👑 Baby Server is running successfully under HinataBot database! — Powered by Mr. King");
-});
-
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
+                                             
