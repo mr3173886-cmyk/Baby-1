@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mr. King - Max Bot Trainer</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0b0f19; color: #f1f5f9; padding: 20px; display: flex; justify-content: center; }
+        .panel { width: 100%; max-width: 650px; background: #111827; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #1f2937; }
+        h2 { text-align: center; color: #38bdf8; margin-top: 0; font-size: 26px; font-weight: 700; letter-spacing: 1px; }
+        p { text-align: center; color: #9ca3af; font-size: 14px; margin-top: -10px; margin-bottom: 25px; }
+        textarea { width: 100%; height: 250px; background: #030712; color: #10b981; border: 1px solid #374151; border-radius: 10px; padding: 15px; font-family: 'Courier New', Courier, monospace; font-size: 15px; resize: none; outline: none; box-sizing: border-box; }
+        textarea:focus { border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+        button { width: 100%; padding: 15px; background: #0284c7; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.2s; }
+        button:hover { background: #0369a1; }
+        .status { margin-top: 20px; padding: 12px; border-radius: 8px; text-align: center; font-weight: 600; display: none; }
+        .success { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid #047857; }
+        .error { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid #b91c1c; }
+    </style>
+</head>
+<body>
+
+<div class="panel">
+    <h2>👑 Mr. King Max Trainer</h2>
+    <p>বটকে একসাথে আনলিমিটেড প্রশ্নের উত্তর শেখানোর প্যানেল</p>
+    
+    <textarea id="bulkText" placeholder="এখানে ফরম্যাট অনুযায়ী লিখুন বা পেস্ট করুন...&#10;&#10;bby teach 🐍 - Kali nagin ki jesi akhen 🐍🐍&#10;bby teach তুমি কে - আমি মিস্টার কিংসের কিউট বট 🤖&#10;bby teach hello - hi janu - hello dear"></textarea>
+    
+    <button onclick="submitBulkData()">🚀 Submit To Database</button>
+    <div id="statusBox" class="status"></div>
+</div>
+
+<script>
+    async function submitBulkData() {
+        const textData = document.getElementById("bulkText").value.trim();
+        const statusBox = document.getElementById("statusBox");
+        
+        if (!textData) {
+            statusBox.className = "status error";
+            statusBox.innerText = "❌ কিছু তো লিখুন ভাই!";
+            statusBox.style.display = "block";
+            return;
+        }
+
+        statusBox.className = "status";
+        statusBox.style.display = "block";
+        statusBox.style.background = "#1f2937";
+        statusBox.style.color = "#9ca3af";
+        statusBox.innerText = "⏳ w8 kor";
+
+        try {
+            const response = await fetch('/api/jan/bulk-teach', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ textData })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                statusBox.className = "status success";
+                statusBox.innerText = result.message + ` (মোট ডেটা: ${result.count} টি)`;
+                document.getElementById("bulkText").value = ""; 
+            } else {
+                statusBox.className = "status error";
+                statusBox.innerText = "❌ সার্ভারে কোনো সমস্যা হয়েছে!";
+            }
+        } catch (err) {
+            statusBox.className = "status error";
+            statusBox.innerText = "❌ কানেকশন ফেল্ড বা সার্ভার অফলাইন!";
+        }
+    }
+</script>
+</body>
+</html>
